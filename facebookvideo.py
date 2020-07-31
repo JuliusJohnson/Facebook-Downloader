@@ -3,13 +3,13 @@ import requests as r
 from pprint import pprint
 from moviepy.editor import *
 import os, re
-from datetime import datetime, time
+from datetime import datetime, time #not using time yet
 from bs4 import BeautifulSoup
 
 today_datetime = str(datetime.today().strftime("%Y-%m-%d"))
 
 def is_valid():
-    
+    #Performs a check to ensure that the a valid Facebook url is pasted
     while True:
         url = input("Enter a Facebook Video URL: ")
         regex = re.compile(
@@ -48,10 +48,26 @@ def download_video(video_url):
                 f.write(chunk)
 
     video = VideoFileClip('facebook2.mp4')
-    video.audio.write_audiofile(sermonTitle +'.mp3')
+    video.audio.write_audiofile(video_url[1] +'.mp3')
 
     os.remove('facebook2.mp4')
 
-print(parse_html('https://www.facebook.com/ThePathChurch/videos/972778836528420'))
+def main():
+    download_video(parse_html(is_valid()))
+    
+if __name__ == "__main__":
+    while True:
+        try:
+            main()
+        except IndexError:
+            print('The provided link is either a private video or the video is no longer live. Please try a different URL. :)')
+            pass
+        else:
+            break
+            
 
-#download_video(parse_html(is_valid()))
+#TODO create output file path picker
+#Implement into command line 
+#add bulk url mode
+#add additional error handling and help
+#add video conversion
