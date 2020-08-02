@@ -33,11 +33,17 @@ def parse_html(url):
     #Finds mp4 file through parsing html using Beautiful Soup
     html = r.get(url)
     soup = BeautifulSoup(html.text, 'html.parser')
-    video_url = (soup.find_all('meta')[9].attrs['content'])
     facebook_title = soup.title.string
     title = f"{today_datetime} - {facebook_title}"
-    print(title)
-    return video_url, title
+    video_url = (soup.find_all('meta')[9].attrs['content'])
+    video_url_alt = (soup.find("meta", property="og:video:secure_url").attrs['content'])
+
+    try:
+        r.get(video_url).status_code < 400
+        return video_url, title
+    except: #look up request exceptions for additional error handling
+        r.get(video_url_alt).status_code <400
+        return video_url_alt, title
 
 def download_video(video_url):
     #Downloads video and converts to audio
@@ -47,10 +53,8 @@ def download_video(video_url):
         for chunk in video_requests.iter_content(chunk_size = 5120*1024):
             if chunk:
                 f.write(chunk)
-
     video = VideoFileClip('facebook2.mp4')
     video.audio.write_audiofile(video_url[1] +'.mp3')
-
     os.remove('facebook2.mp4')
 
 def main():
@@ -66,6 +70,7 @@ if __name__ == "__main__":
         else:
             break
             
+#print(parse_html(""))
 
 #TODO create output file path picker
 #Implement into command line 
