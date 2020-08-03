@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-#facebook video to audio
+#Facebook Video to Audio Tool
 import requests as r
-from pprint import pprint
 from moviepy.editor import *
 import os, re
-from datetime import datetime, time #not using time yet
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 today_datetime = str(datetime.today().strftime("%Y-%m-%d"))
-
+file_location = os.path.abspath("output/")
+    
 def is_valid():
     #Performs a check to ensure that the a valid Facebook url is pasted
     while True:
@@ -41,12 +41,15 @@ def parse_html(url):
     try:
         r.get(video_url).status_code < 400
         return video_url, title
-    except: #look up request exceptions for additional error handling
+    except r.exceptions.MissingSchema: #Handles errors from request module
         r.get(video_url_alt).status_code <400
         return video_url_alt, title
+    except:
+        print('The link could not be parsed. Please try again. :(')
 
 def download_video(video_url):
     #Downloads video and converts to audio
+    os.chdir("output")
     print("Please be patient while the video is downloading...")
     video_requests = r.get(video_url[0], stream = True)
     with open('facebook2.mp4', 'wb') as f:
@@ -57,23 +60,28 @@ def download_video(video_url):
     video.audio.write_audiofile(video_url[1] +'.mp3')
     os.remove('facebook2.mp4')
 
+def create_output():
+    #Checks if output folder exists; if not creates "output"
+    directory = ("output")
+    check_folder = os.path.isdir(directory)
+    if not check_folder:
+        os.makedirs(directory)
+        print(f"Created Folder: {directory}")
+        
 def main():
+    #Executes previously defined functions
+    create_output()
+    file_path = os.path.abspath("output")
     download_video(parse_html(is_valid()))
+    print(f'You may find your video at {file_path}')
     
 if __name__ == "__main__":
     while True:
         try:
             main()
+         
         except IndexError:
             print('The provided link is either a private video or the video is no longer live. Please try a different URL. :)')
             pass
         else:
             break
-            
-#print(parse_html(""))
-
-#TODO create output file path picker
-#Implement into command line 
-#add bulk url mode
-#add additional error handling and help -- done
-#add video conversion
